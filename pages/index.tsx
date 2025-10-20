@@ -11,12 +11,13 @@ function ExplorerLink({ href, children }: any){
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const pc = usePublicClient();
+  const pcL1 = usePublicClient({ chainId: L1.id });
+  const pcL2 = usePublicClient({ chainId: L2.id });
   const { data: wallet } = useWalletClient();
 
   // 余额（L1/L2 ETH）
-  const l1Eth = useBalance({ address, chainId: L1.id, query: { enabled: !!address }});
-  const l2Eth = useBalance({ address, chainId: L2.id, query: { enabled: !!address }});
+  const l1Eth = useBalance({ address, query: { enabled: !!address }});
+  const l2Eth = useBalance({ address, query: { enabled: !!address }});
 
   // ERC-20 余额
   const [l1Erc20, setL1Erc20] = useState<string>('0');
@@ -24,16 +25,16 @@ export default function Home() {
   const [decimals, setDecimals] = useState<number>(18);
 
   const refreshErc20 = async ()=>{
-    if(!address) return;
+    if(!pcL1 || !pcL2 || !address) return;
     try{
       const [d, b1, b2] = await Promise.all([
-        pc.readContract({ address: ADDR.L1_ERC20 as `0x${string}`, abi: ERC20, functionName: 'decimals' as any, chainId: L1.id }),
-        pc.readContract({ address: ADDR.L1_ERC20 as `0x${string}`, abi: ERC20, functionName: 'balanceOf', args:[address], chainId: L1.id }),
-        pc.readContract({ address: ADDR.L2_ERC20 as `0x${string}`, abi: ERC20, functionName: 'balanceOf', args:[address], chainId: L2.id }),
+        pcL1.readContract({ address: ADDR.L1_ERC20 as `0x${string}`, abi: ERC20, functionName: 'decimals' as any }),
+        pcL1.readContract({ address: ADDR.L1_ERC20 as `0x${string}`, abi: ERC20, functionName: 'balanceOf', args:[address] }),
+        pcL2.readContract({ address: ADDR.L2_ERC20 as `0x${string}`, abi: ERC20, functionName: 'balanceOf', args:[address] }),
       ]);
-      setDecimals(Number(d));
-      setL1Erc20(b1.toString());
-      setL2Erc20(b2.toString());
+      setDecimals(Number(d as number));
+      setL1Erc20((b1 as bigint).toString());
+      setL2Erc20((b2 as bigint).toString());
     }catch(e){}
   };
   useEffect(()=>{ refreshErc20(); }, [address]);
@@ -69,8 +70,7 @@ export default function Home() {
       const hash = await wallet.writeContract({
         address: token as `0x${string}`,
         abi: ERC20,
-        functionName: 'claimFaucet',
-        chainId: which==='l1' ? L1.id : L2.id
+        functionName: 'claimFaucet'
       });
       alert(`已发送交易：${hash}`);
       setTimeout(refreshErc20, 5000);
@@ -90,8 +90,7 @@ export default function Home() {
         abi: L1StandardBridge,
         functionName: 'depositETHTo',
         args: [address, 200000, '0x'],
-        value: parseEther(amt),
-        chainId: L1.id
+        value: parseEther(amt)
       });
       alert(`已发送 L1→L2 ETH 存款：${hash}\n几分钟后 L2 到账。`);
     }catch(e:any){ alert(e.message||String(e)); }
@@ -108,15 +107,13 @@ export default function Home() {
         address: ADDR.L1_ERC20 as `0x${string}`,
         abi: ERC20,
         functionName: 'approve',
-        args: [ADDR.L1_BRIDGE, amount],
-        chainId: L1.id
+        args: [ADDR.L1_BRIDGE, amount]
       });
       const hash = await wallet.writeContract({
         address: ADDR.L1_BRIDGE as `0x${string}`,
         abi: L1StandardBridge,
         functionName: 'depositERC20To',
-        args: [ADDR.L1_ERC20, ADDR.L2_ERC20, address, amount, 200000, '0x'],
-        chainId: L1.id
+        args: [ADDR.L1_ERC20, ADDR.L2_ERC20, address, amount, 200000, '0x']
       });
       alert(`已发送 L1→L2 ERC-20 存款：${hash}\nL2 余额几分钟内到账。`);
     }catch(e:any){ alert(e.message||String(e)); }
@@ -133,8 +130,7 @@ export default function Home() {
         abi: L2MessagePasser,
         functionName: 'initiateWithdrawal',
         args: [address, 0n, '0x'],
-        value: parseEther(amt),
-        chainId: L2.id
+        value: parseEther(amt)
       });
       setWithdrawHash(hash);
       if (typeof window !== 'undefined') localStorage.setItem('giwa_withdraw_tx', hash);
@@ -153,8 +149,7 @@ export default function Home() {
         address: ADDR.L2_BRIDGE as `0x${string}`,
         abi: L2StandardBridge,
         functionName: 'withdraw',
-        args: [ADDR.L2_ERC20, amount, 0, '0x'],
-        chainId: L2.id
+        args: [ADDR.L2_ERC20, amount, 0, '0x']
       });
       alert(`L2→L1 ERC-20 提现初始化成功：${hash}\n7 天后在 L1 完成 prove/finalize。`);
     }catch(e:any){ alert(e.message||String(e)); }

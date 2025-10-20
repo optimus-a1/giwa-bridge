@@ -40,3 +40,4 @@ export { default as ERC20 } from './abis/erc20.json';
 export { default as L1StandardBridge } from './abis/L1StandardBridge.json';
 export { default as L2StandardBridge } from './abis/L2StandardBridge.json';
 export { default as L2MessagePasser } from './abis/L2MessagePasser.json';
+export const sepolia = L1; export const giwa = L2;

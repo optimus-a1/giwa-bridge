@@ -1,15 +1,15 @@
 import { useAccount, useBalance, useChainId, useReadContract } from 'wagmi';
-import { erc20Abi } from '@/lib/abis';
+import { ERC20 as erc20Abi } from "@/lib/abis";
 import { env, fmt } from '@/lib/utils';
-import { giwa, sepolia } from '@/lib/chains';
+import { L2, L1 } from '@/lib/chains';
 
 export default function BalancesCard() {
   const { address } = useAccount();
-  const l1Id = sepolia.id;
-  const l2Id = giwa.id;
+  const l1Id = L1.id;
+  const l2Id = L2.id;
 
-  const l1Eth = useBalance({ address, chainId: l1Id, watch: true });
-  const l2Eth = useBalance({ address, chainId: l2Id, watch: true });
+  const l1Eth = useBalance({ address, chainId: l1Id, query: { enabled: !!address, refetchInterval: 8000 } });
+  const l2Eth = useBalance({ address, chainId: l2Id, query: { enabled: !!address, refetchInterval: 8000 } });
 
   const l1Erc20 = useReadContract({
     chainId: l1Id,

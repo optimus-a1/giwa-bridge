@@ -1,51 +1,38 @@
-import { useAccount, useChainId, useWriteContract } from 'wagmi';
-import { faucetAbi } from '@/lib/abis';
-import { env } from '@/lib/utils';
-import { sepolia, giwa } from '@/lib/chains';
-import { useState } from 'react';
+import { useAccount } from 'wagmi'
+import { FAUCET } from '@/lib/chains'   // ✅ 改这里：从 chains 取水龙头 URL
+import { useState } from 'react'
 
 export default function FaucetCard() {
-  const { address } = useAccount();
-  const [msg, setMsg] = useState<string>('');
-  const { writeContractAsync } = useWriteContract();
+  const { address } = useAccount()
+  const [busy, setBusy] = useState(false)
 
-  const claim = async (isL2: boolean) => {
-    setMsg('');
-    if (!address) return setMsg('请先连接钱包');
-    const mode = isL2 ? env.L2_FAUCET_MODE : env.L1_FAUCET_MODE;
-    const url = isL2 ? env.L2_FAUCET_URL : env.L1_FAUCET_URL;
-    const fa = isL2 ? env.L2_FAUCET_ADDR : env.L1_FAUCET_ADDR;
-    const fn = isL2 ? env.L2_FAUCET_METHOD : env.L1_FAUCET_METHOD;
-    const chainId = isL2 ? giwa.id : sepolia.id;
-
-    if (mode === 'link' || (!fa && url)) {
-      window.open(url, '_blank'); return;
-    }
-    if (!fa) return setMsg('未配置 Faucet 合约地址，请改用外链领取');
-
-    try {
-      const hash = await writeContractAsync({
-        address: fa as `0x${string}`,
-        abi: faucetAbi,
-        functionName: fn === 'drip' ? 'drip' : 'claim',
-        args: fn === 'drip' ? [address, BigInt(env.FAUCET_DEFAULT) * 10n ** 18n] : [],
-        chainId
-      });
-      setMsg(`已发送领取交易：${hash}`);
-    } catch (e:any) {
-      setMsg(`领取失败：${e.shortMessage || e.message}`);
-    }
-  };
+  const open = (url: string) => {
+    if (typeof window !== 'undefined') window.open(url, '_blank')
+  }
 
   return (
-    <div className="card">
-      <h3>水龙头 / Faucet</h3>
-      <div className="row" style={{gap:8}}>
-        <button className="button" onClick={()=>claim(false)}>领取 L1（Sepolia）</button>
-        <button className="button" onClick={()=>claim(true)}>领取 L2（GIWA）</button>
-      </div>
-      <div className="small" style={{marginTop:8}}>{msg || '若为外链模式，将在新窗口打开官方水龙头。'}</div>
-    </div>
-  );
-}
+    <div className="card span-12">
+      <div className="h2">水龙头 / Faucet</div>
 
+      <div className="p">
+        <b>L1（Sepolia）：</b> 先领取 <code>Sepolia ETH</code> 与 <code>Sepolia ERC-20</code>，
+        再把 ERC-20 通过下面的 “L1→L2：ERC-20 存入” 桥到 GIWA。
+      </div>
+
+      <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+        <button className="btn" onClick={() => open(FAUCET.sepolia)}>
+          领取 Sepolia ETH / ERC-20（外链）
+        </button>
+
+        <button className="btn sec" onClick={() => open(FAUCET.giwa)}>
+          GIWA 官方水龙头（外链）
+        </button>
+
+        <span className="tips">
+          说明：GIWA 侧的测试代币通常为桥接资产。若 GIWA 合约不提供 <code>claimFaucet</code>，
+          请在 L1 领取 ERC-20 后，使用下方桥接功能把代币存入 L2（GIWA）。
+        </span>
+      </div>
+    </div>
+  )
+}

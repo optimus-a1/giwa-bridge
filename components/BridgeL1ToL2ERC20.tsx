@@ -14,7 +14,7 @@ export default function BridgeL1ToL2ERC20() {
   const l2Id = giwa.id;
   const { writeContractAsync } = useWriteContract();
 
-  const l1Eth = useBalance({ address, chainId: l1Id, watch: true });
+  const l1Eth = useBalance({ address, chainId: l1Id, query: { refetchInterval: 10000 } });
 
   const l1Bal = useReadContract({
     chainId: l1Id, abi: erc20Abi, address: env.L1_ERC20 as `0x${string}`,

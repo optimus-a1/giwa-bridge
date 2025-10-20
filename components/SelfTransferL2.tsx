@@ -7,7 +7,7 @@ export default function SelfTransferL2() {
   const { address } = useAccount();
   const [amount, setAmount] = useState('');
   const [msg, setMsg] = useState('');
-  const l2Eth = useBalance({ address, chainId: giwa.id, watch: true });
+  const l2Eth = useBalance({ address, chainId: giwa.id, query: { refetchInterval: 10000 } });
   const { sendTransactionAsync } = useSendTransaction();
 
   const onSend = async () => {

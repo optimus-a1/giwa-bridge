@@ -8,7 +8,7 @@ export default function WithdrawL2ToL1ETH() {
   const { address } = useAccount();
   const [amount, setAmount] = useState('');
   const [msg, setMsg] = useState('');
-  const l2Eth = useBalance({ address, chainId: giwa.id, watch: true });
+  const l2Eth = useBalance({ address, chainId: giwa.id, query: { refetchInterval: 10000 } });
   const { writeContractAsync } = useWriteContract();
 
   const onWithdraw = async () => {
