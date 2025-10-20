@@ -1,0 +1,14 @@
+[
+  {
+    "type":"function",
+    "name":"withdraw",
+    "stateMutability":"nonpayable",
+    "inputs":[
+      {"name":"_l2Token","type":"address"},
+      {"name":"_amount","type":"uint256"},
+      {"name":"_minGasLimit","type":"uint32"},
+      {"name":"_extraData","type":"bytes"}
+    ],
+    "outputs":[]
+  }
+]

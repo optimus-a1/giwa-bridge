@@ -1,0 +1,27 @@
+[
+  {
+    "type":"function",
+    "name":"depositETHTo",
+    "stateMutability":"payable",
+    "inputs":[
+      {"name":"_to","type":"address"},
+      {"name":"_l2Gas","type":"uint32"},
+      {"name":"_data","type":"bytes"}
+    ],
+    "outputs":[]
+  },
+  {
+    "type":"function",
+    "name":"depositERC20To",
+    "stateMutability":"nonpayable",
+    "inputs":[
+      {"name":"_l1Token","type":"address"},
+      {"name":"_l2Token","type":"address"},
+      {"name":"_to","type":"address"},
+      {"name":"_amount","type":"uint256"},
+      {"name":"_l2Gas","type":"uint32"},
+      {"name":"_data","type":"bytes"}
+    ],
+    "outputs":[]
+  }
+]

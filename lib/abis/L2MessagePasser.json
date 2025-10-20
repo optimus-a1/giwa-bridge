@@ -1,0 +1,13 @@
+[
+  {
+    "type":"function",
+    "name":"initiateWithdrawal",
+    "stateMutability":"payable",
+    "inputs":[
+      {"name":"_target","type":"address"},
+      {"name":"_gasLimit","type":"uint256"},
+      {"name":"_data","type":"bytes"}
+    ],
+    "outputs":[]
+  }
+]
